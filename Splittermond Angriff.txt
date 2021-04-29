@@ -1,0 +1,449 @@
+package testpackage;
+import java.util.Scanner;
+
+
+//LETZTER STAND: BISHER BERECHNET ES NUR WIE VIEL SCHADEN JEMAND DURCHSCHNITTLICH MACHT OHNE
+//JEMALS ZU GUCKEN WAS DIE WAFFE/ DER ANGREIFER/ DER VERTEIDIGER FÜR EIGENSCHAFTEN HABEN.
+//EINE SCHADEN PRO TICK ANZEIGE WÄRE NICHT SCHLECHT
+
+
+
+public class Angriff {
+	
+	private static Scanner temp;
+
+
+
+	public static double trefferOhneAA(double EG, double Wuerfelbestimmung, int Wuerfelanzahl, double Grundschaden, double Durchdringung, double Schadensreduktion, double Scharf, double Wuchtig, double Kritisch, double Verwundbarkeit) {
+		double Faelle = 0;
+		double Ende = 0;
+		int Zaehler = 0;
+		double Gesamtschaden = 0;
+		double Gesamtwuerfel = 0;
+		double WSchaden[] = new  double[Wuerfelanzahl];
+		
+		//Für den Fall, dass die Durchdringung größer als die Schadensreduktion ist macht man nicht plötzlich mehr Schaden
+		double Reduktion = Schadensreduktion - Durchdringung;
+		if(Reduktion < 0) {
+			Reduktion = 0;
+		}
+		
+		//Erstellung der Würfel
+		for(int i = 0; i < Wuerfelanzahl; i++) {
+			WSchaden[i] = 1;
+		}
+		if(Wuerfelbestimmung == 0) {
+			Wuerfelbestimmung = 6;
+		}
+		if(Wuerfelbestimmung == 1) {
+			Wuerfelbestimmung = 10;
+		}
+		
+		//ERKLÄRUNG DER EINZELNEN VARIABLEN:
+		//Ende ist nur eine Variable, welche umgeschaltet wird sobald es keine möglichen Würfelergebnisse mehr gibt
+		//Gesamtwürfel sagt wie viel Schaden genau dieses Wurfergebnis macht abseits von allen Attributen
+		//Zähler gibt den index des momentanen Würfels an
+		//WSchaden[] gibt das Ergebnis dieses speziellen Würfels an
+		//Zähler gibt den index des momentanen Würfels an
+		//EG gibt die EG-Anzahl an
+		//Grundschaden gibt den Grundschaden des Angreifers an
+		//
+		
+		while(Ende == 0) {
+			Gesamtwuerfel = 0;
+		while (Zaehler < Wuerfelanzahl) {
+			
+			Gesamtwuerfel += WSchaden[Zaehler];
+			
+			//Implementierung von Kritisch für jedes Würfelergebnis
+			if(WSchaden[Zaehler]==Wuerfelbestimmung) {
+				Gesamtschaden += Kritisch;
+			}
+			
+			//Implementierung von Scharf für jedes Würfelergebnis
+			if(WSchaden[Zaehler] < Scharf) {
+				Gesamtschaden += (Scharf - WSchaden[Zaehler]);
+			}
+			Zaehler++;
+		}
+			Zaehler = 0;
+			Gesamtschaden += (((EG * (1 + Wuchtig)) + Grundschaden + Gesamtwuerfel) * Verwundbarkeit - Reduktion);
+			Faelle++;
+			WSchaden[0]++;
+			while(Zaehler < Wuerfelanzahl-1) {
+			if (WSchaden[Zaehler]> Wuerfelbestimmung) {
+				WSchaden[Zaehler] = 1;
+				WSchaden[Zaehler +1] ++;
+				}
+			Zaehler++;
+			}
+			Zaehler = 0;
+			
+			if(Gesamtwuerfel > (Wuerfelanzahl*Wuerfelbestimmung)) {    //Sollte man mit dieser Weise über den Maximalwert der Würfel kommen
+				Ende = 1;											   //dann wird die Schleife abgebrochen
+			}
+			}
+			return Gesamtschaden/Faelle;
+	}
+		
+	
+	//Übergabe vom Angriffswert
+		public static double Angriffswert() {
+			temp = new Scanner(System.in);
+			System.out.println("Was ist der Angriffswert?");
+			double Angriffswert = temp.nextDouble();
+			if(Angriffswert % 1 != 0) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Angriffswert();
+			}
+			return Angriffswert;
+	}
+	//Übergabe des Verteidigungswert
+		public static double Verteidigung() {
+			temp = new Scanner(System.in);
+			System.out.println("Was ist der Verteidigungswert?");
+			double Verteidigung = temp.nextDouble();
+			if(Verteidigung % 1 != 0) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Verteidigung();
+			}
+			return Verteidigung;
+	}
+	//Abfrage ob man einen W10 oder W6 benutzt
+		public static double Wuerfelbestimmung() {
+			temp = new Scanner(System.in);
+			System.out.println("Benutzt du W6 oder W10?");
+			System.out.println("0: W6");
+			System.out.println("1: W10");
+			double Wuerfelbestimmung = temp.nextDouble();
+			if (Wuerfelbestimmung == 0) {
+				Wuerfelbestimmung = 6;
+			}else {
+			if (Wuerfelbestimmung == 1) {
+				Wuerfelbestimmung = 10;
+			}else{
+				System.out.println("Fehler bei der Eingabe!!!");
+				Wuerfelbestimmung();}
+			}
+			return Wuerfelbestimmung;
+	}
+		//Übergabe der Würfelanzahl
+		public static int Wuerfelanzahl() {
+			temp = new Scanner(System.in);
+			System.out.println("Wie viele Würfel?");
+			int Wuerfelanzahl = temp.nextInt();
+			if(Wuerfelanzahl % 1 != 0 || Wuerfelanzahl < 0) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Wuerfelanzahl();
+			}
+			return Wuerfelanzahl;
+	}
+		//Übergabe des Grundschadens der Waffe
+		public static double Grundschaden(){
+			temp = new Scanner(System.in);
+			System.out.println("Wie viel Grundschaden hat der Angreifer?");
+			System.out.println("(Bitte dabei die Eigenschaft Primitiv miteinberechnen.)");
+			double Grundschaden = temp.nextDouble();
+			if(Grundschaden % 1 != 0) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Grundschaden();
+			}
+			return Grundschaden;
+		}
+		//Übergabe der Waffengeschwindigkeit
+		public static double WGS() {
+			temp = new Scanner(System.in);
+			System.out.println("Wie hoch ist die Waffengeschwindigkeit?");
+			double WGS = temp.nextDouble();
+			if(WGS % 1 != 0 || WGS < 0) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				WGS();
+			}
+			return WGS;
+		}
+		//Übergabe der Durchdringung
+		public static double Durchdringung() {
+			temp = new Scanner(System.in);
+			System.out.println("Wie viel Durchdringung hat der Angreifer?");
+			double Durchdringung = temp.nextDouble();
+			if(Durchdringung % 1 != 0 || Durchdringung < 0) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Durchdringung();
+			}
+			return Durchdringung;
+		}
+		//Übergabe der Schadensreduktion
+		public static double Schadensreduktion() {
+			temp = new Scanner(System.in);
+			System.out.println("Wie viel Schadensreduktion besitzt der Verteidiger?");
+			System.out.println("Hier auch eventuelle Resistenzen mit rein tun");
+			double Schadensreduktion = temp.nextDouble();
+			if(Schadensreduktion % 1 != 0 || Schadensreduktion < 0) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Schadensreduktion();
+			}
+			return Schadensreduktion;
+		}
+		//Übergabe des Scharf Wertes
+		public static double Scharf() {
+			temp = new Scanner(System.in);
+			System.out.println("Wie Scharf ist die Waffe?");
+			System.out.println("Sollte sie nicht Scharf sein bitte 1 eingeben.");
+			double Scharf = temp.nextDouble();
+			if(Scharf % 1 != 0 || Scharf <= 0) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Scharf();
+			}
+			return Scharf;
+		}
+		//Nachfrage ob die Waffe wuchtig ist
+		public static double Wuchtig() {
+			temp = new Scanner(System.in);
+			System.out.println("Ist die Waffe Wuchtig?");
+			System.out.println("0: Nicht wuchtig");
+			System.out.println("1: Wuchtig");
+			double Wuchtig = temp.nextDouble();
+			if(Wuchtig != 0 && Wuchtig != 1) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Wuchtig();
+			}
+			return Wuchtig;
+		}
+		//Nachfrage ob die Waffe Kritisch ist
+		public static double Kritisch() {
+			temp = new Scanner(System.in);
+			System.out.println("Ist die Waffe Kritisch?");
+			System.out.println("Falls nicht bitte 0 eingeben.");
+			double Kritisch = temp.nextDouble();
+			if(Kritisch % 1 != 0 || Kritisch < 0) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Kritisch();
+			}
+			return Kritisch;
+		}
+		//Nachfrage nach Verwundbarkeit
+		public static double Verwundbarkeit() {
+			temp = new Scanner(System.in);
+			System.out.println("Ist der Verteidiger verwundbar gegen die Schadensart?");
+			System.out.println("0: Nein");
+			System.out.println("1: Ja");
+			double Verwundbarkeit = temp.nextDouble();
+			if(Verwundbarkeit != 0 && Verwundbarkeit != 1) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Verwundbarkeit();
+			}
+			return Verwundbarkeit + 1;
+		}
+		//Nachfrage nach der Existenz von einem Gift
+		public static double Giftanfrage() {
+			temp = new Scanner(System.in);
+			System.out.println("Besitzt der Angreifer ein Gift?");
+			System.out.println("0: Kein Gift");
+			System.out.println("1: Gift");
+			double Giftanfrage = temp.nextDouble();
+			if(Giftanfrage != 0 && Giftanfrage != 1) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Giftanfrage();
+			}
+			return Giftanfrage;
+		}
+		public static double Giftgrad() {
+			temp = new Scanner(System.in);
+			System.out.println("Was ist der Giftgrad des Giftes?");
+			double Giftgrad = temp.nextDouble();
+			if(Giftgrad % 1 != 0 || Giftgrad < 0) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				Giftgrad();
+			}
+			return Giftgrad;
+		}
+		public static double KW() {
+			temp = new Scanner(System.in);
+			System.out.println("Wie hoch ist der Körperliche Widerstand der Verteidiger?");
+			double KW = temp.nextDouble();
+			if(KW % 1 != 0 || KW < 0) {
+				System.out.println("Geb mir hier keinen Unsinn!");
+				KW();
+			}
+			return KW;
+		}
+
+	
+
+	public static void main(String[] args) {
+		double EG = 0;
+		double GrundAG = 0;
+		double Treffer = 0;
+		double Treffer0EG = 0;
+		double Treffer1EG = 0;
+		double Treffer2EG = 0;
+		double Treffer3EG = 0;
+		double Treffer4EG = 0;
+		double Trefferhöher5EG = 0;
+		double NTreffer = 0;
+		double Giftgrad = 0;
+		double KW = 0;
+		
+		//Abfragemarathon der verschiedenen Werte von Angreifer und Verteidiger
+		double Angriffswert = Angriffswert();
+		
+		double Verteidigung = Verteidigung();
+		
+		double Wuerfelbestimmung = Wuerfelbestimmung();
+		
+		int Wuerfelanzahl = Wuerfelanzahl();
+		
+		double Grundschaden = Grundschaden();
+		
+		double WGS = WGS();
+		
+		double Durchdringung = Durchdringung();
+		
+		double Schadensreduktion = Schadensreduktion();
+		
+		double Scharf = Scharf();
+		
+		double Wuchtig = Wuchtig();
+		
+		double Kritisch = Kritisch();
+		
+		double Verwundbarkeit = Verwundbarkeit();
+		
+		double Giftanfrage = Giftanfrage();
+		
+		if(Giftanfrage == 1) {
+		Giftgrad = Giftgrad();
+			
+		KW = KW();
+		}
+		
+		
+
+		
+		double Gesamtschaden = 0;
+	    GrundAG = Angriffswert;
+		for(double i = 1; i <= 10; i++) {
+		for(double h = 1; h <= 10; h++) {
+			Angriffswert = GrundAG;
+			if(Angriffswert + i + h >= Verteidigung && i + h > 3) {
+				if (Angriffswert + i + h >= Verteidigung && i + h >= 19) {
+					Angriffswert = Angriffswert + 9;
+				}
+				if((Angriffswert + i + h - Verteidigung) / 3 >= 0 && (Angriffswert + i + h - Verteidigung) / 3 < 1) {
+					Treffer0EG++;
+					EG = 0;
+				}
+				if((Angriffswert + i + h - Verteidigung) / 3 >= 1 && (Angriffswert + i + h - Verteidigung) / 3 < 2) {
+					Treffer1EG++;
+					EG = 1;
+				}
+				if((Angriffswert + i + h - Verteidigung) / 3 >= 2 && (Angriffswert + i + h - Verteidigung) / 3 < 3) {
+					Treffer2EG++;
+					EG = 2;
+				}
+				if((Angriffswert + i + h - Verteidigung) / 3 >= 3 && (Angriffswert + i + h - Verteidigung) / 3 < 4) {
+					Treffer3EG++;
+					EG = 3;
+				}
+				if((Angriffswert + i + h - Verteidigung) / 3 >= 4 && (Angriffswert + i + h - Verteidigung) / 3 < 5) {
+					Treffer4EG++;
+					EG = 4;
+				}
+				if((Angriffswert + i + h - Verteidigung) / 3 >= 5) {
+					Trefferhöher5EG++;
+					EG = (Angriffswert + i + h - Verteidigung)/3 -  ((Angriffswert + i + h - Verteidigung) % 3)/3;
+				}
+	
+				//Nach einem Wurf wird dieses Ergebnis in die Methode getan.
+				 Gesamtschaden += trefferOhneAA( EG,  Wuerfelbestimmung,  Wuerfelanzahl,  Grundschaden , Durchdringung, Schadensreduktion, Scharf, Wuchtig, Kritisch, Verwundbarkeit);    
+				
+				 
+				 //Egal ob Schaden gemacht wird oder nicht es werden trotzdem Treffer gezählt und die Anzahl der Angriffe
+				Treffer++;
+			}else {
+				NTreffer++;
+			}
+		}
+		}
+		
+		//Ausgabe aller wichtigen Daten
+		System.out.println("Angriffsergebnisse");
+		System.out.println("Treffer mit 0 EG: " + Treffer0EG + "%");
+		System.out.println("Treffer mit 1 EG: " + Treffer1EG + "%");
+		System.out.println("Treffer mit 2 EG: " + Treffer2EG + "%");
+		System.out.println("Treffer mit 3 EG: " + Treffer3EG + "%");
+		System.out.println("Treffer mit 4 EG: " + Treffer4EG + "%");
+		System.out.println("Treffer mit 5 EG oder mehr: " + Trefferhöher5EG + "%");
+		System.out.println("Chance zu treffen: " +  Treffer + "%");
+		System.out.println("Chance nicht zu treffen: " +  NTreffer + "%");
+		System.out.println("Durchschnittsschaden pro Angriff: " + (Gesamtschaden / 100));
+		System.out.println("Schaden pro Tick: " + ((Gesamtschaden / 100)/WGS));
+			
+
+			
+			//Bei der Überprüfung der Giftwirkung werden die selben variablen benutzt wie beim Angriff
+			
+			
+			if(Giftanfrage == 1) {
+
+			GrundAG = Giftgrad * 4;
+			Verteidigung = KW;
+			Treffer = 0;
+			NTreffer = 0;
+			Treffer0EG = 0;
+			Treffer1EG = 0;
+			Treffer2EG = 0;
+			Treffer3EG = 0;
+			Treffer4EG = 0;
+			Trefferhöher5EG = 0;
+			for(double i = 1; i <= 10; i++) {
+			for(double h = 1; h <= 10; h++) {
+				Angriffswert = GrundAG;
+				if(Angriffswert + i + h >= Verteidigung && i + h > 3) {
+					if (Angriffswert + i + h >= Verteidigung && i + h >= 19) {
+						Angriffswert = Angriffswert + 9;
+					}
+					if((Angriffswert + i + h - Verteidigung) / 3 >= 0 && (Angriffswert + i + h - Verteidigung) / 3 < 1) {
+						Treffer0EG++;
+						Treffer++;
+					}
+					if((Angriffswert + i + h - Verteidigung) / 3 >= 1 && (Angriffswert + i + h - Verteidigung) / 3 < 2) {
+						Treffer1EG++;
+						Treffer++;
+					}
+					if((Angriffswert + i + h - Verteidigung) / 3 >= 2 && (Angriffswert + i + h - Verteidigung) / 3 < 3) {
+						Treffer2EG++;
+						Treffer++;
+					}
+					if((Angriffswert + i + h - Verteidigung) / 3 >= 3 && (Angriffswert + i + h - Verteidigung) / 3 < 4) {
+						Treffer3EG++;
+						Treffer++;
+					}
+					if((Angriffswert + i + h - Verteidigung) / 3 >= 4 && (Angriffswert + i + h - Verteidigung) / 3 < 5) {
+						Treffer4EG++;
+						Treffer++;
+					}
+					if((Angriffswert + i + h - Verteidigung) / 3 >= 5) {
+						Trefferhöher5EG++;
+						Treffer++;
+					}
+				}else{
+					NTreffer++;
+				}
+			}
+		}
+			System.out.println();
+			System.out.println("Giftergebnisse:");
+			System.out.println("Wirkung mit 0 EG: " + Treffer0EG + "%");
+			System.out.println("Wirkung mit 1 EG: " + Treffer1EG + "%");
+			System.out.println("Wirkung mit 2 EG: " + Treffer2EG + "%");
+			System.out.println("Wirkung mit 3 EG: " + Treffer3EG + "%");
+			System.out.println("Wirkung mit 4 EG: " + Treffer4EG + "%");
+			System.out.println("Wirkung mit 5 EG oder mehr: " + Trefferhöher5EG + "%");
+			System.out.println("Chance zu wirken: " +  Treffer + "%");
+			System.out.println("Chance nicht zu wirken: " +  NTreffer + "%");	
+		}
+	}
+}
+
+
